@@ -2,6 +2,7 @@ import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:instagram_clone/domain/authentication.dart';
 import 'package:instagram_clone/screens/home_screen.dart';
 import 'package:instagram_clone/screens/login_screen.dart';
+import 'package:instagram_clone/screens/main_screen.dart';
 import 'package:instagram_clone/utils/dimensions.dart';
 import 'package:instagram_clone/widgets/credential_field.dart';
 import 'package:instagram_clone/widgets/progress_button.dart';
@@ -46,10 +47,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         _usernameController.text,
                         _emailController.text,
                         _passwordController.text);
-                    if (mounted && res == 'Success') {
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(
-                          builder: ((context) => const HomeScreen())));
-                    } else {
+                    if (mounted && res != 'Success') {
                       ScaffoldMessenger.of(context)
                           .showSnackBar(SnackBar(content: Text(res)));
                     }

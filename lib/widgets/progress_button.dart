@@ -26,9 +26,6 @@ class _ProgressButtonState extends State<ProgressButton> {
           _isLoading = true;
         });
         await widget.onPressed();
-        setState(() {
-          _isLoading = false;
-        });
       },
       style: NeumorphicStyle(
         shape: NeumorphicShape.convex,

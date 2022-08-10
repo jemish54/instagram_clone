@@ -29,6 +29,7 @@ class MyApp extends StatelessWidget {
           builder: (context, user) {
             return user.hasData
                 ? const Scaffold(
+                    backgroundColor: Colors.blue,
                     body: MainScreen(),
                   )
                 : const SignUpScreen();

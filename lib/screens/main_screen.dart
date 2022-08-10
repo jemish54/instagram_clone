@@ -1,4 +1,5 @@
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
+import 'package:instagram_clone/screens/empty_screen.dart';
 import 'package:instagram_clone/screens/home_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -10,24 +11,81 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  late final screenList = const [
+    HomeScreen(),
+    EmptyScreen(index: 1),
+    EmptyScreen(index: 2),
+    EmptyScreen(index: 3),
+    EmptyScreen(index: 4),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          _currentIndex = index;
-        },
-        backgroundColor: Colors.white,
-        showSelectedLabels: false,
-        items: const [],
+      bottomNavigationBar: Container(
+        color: Colors.transparent,
+        padding: const EdgeInsets.all(10.0),
+        child: Neumorphic(
+          style: NeumorphicStyle(
+              boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(18)),
+              color: Colors.white,
+              depth: 8,
+              shape: NeumorphicShape.concave,
+              surfaceIntensity: 0),
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            backgroundColor: Colors.white,
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            items: [
+              BottomNavigationBarItem(
+                label: 'Home',
+                icon: navItem(Icons.home_rounded, _currentIndex == 0),
+              ),
+              BottomNavigationBarItem(
+                label: 'Search',
+                icon: navItem(Icons.search_rounded, _currentIndex == 1),
+              ),
+              BottomNavigationBarItem(
+                label: 'Add Post',
+                icon: navItem(Icons.add_circle_rounded, _currentIndex == 2),
+              ),
+              BottomNavigationBarItem(
+                label: 'Activity',
+                icon: navItem(Icons.notifications, _currentIndex == 3),
+              ),
+              BottomNavigationBarItem(
+                label: 'Profile',
+                icon: navItem(Icons.person, _currentIndex == 4),
+              ),
+            ],
+          ),
+        ),
       ),
-      body: const HomeScreen(),
+      extendBody: true,
+      body: IndexedStack(index: _currentIndex, children: screenList),
     );
   }
 
-  Widget navItem(IconData iconData, bool isSelected) {
-    return Container();
+  Widget navItem(IconData icon, bool isSelected) {
+    return Neumorphic(
+      style: NeumorphicStyle(
+          depth: isSelected ? 6 : 0,
+          color: isSelected ? Colors.blue : Colors.transparent,
+          shape: isSelected ? NeumorphicShape.convex : NeumorphicShape.flat,
+          boxShape: const NeumorphicBoxShape.circle()),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Icon(
+          icon,
+          color: isSelected ? Colors.white : Colors.grey,
+        ),
+      ),
+    );
   }
 }
