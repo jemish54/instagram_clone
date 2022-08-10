@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
       title: "Instagram",
       theme: ThemeData(fontFamily: GoogleFonts.rubik().fontFamily),
       home: StreamBuilder<User?>(
-          stream: AuthService().authStateStream(),
+          stream: FirebaseAuth.instance.authStateChanges(),
           builder: (context, user) {
             return user.hasData
                 ? const Scaffold(

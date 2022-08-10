@@ -5,8 +5,6 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Stream<User?> authStateStream() => _auth.authStateChanges();
-
   Future<String> signUpUser(
     String username,
     String email,
@@ -14,7 +12,7 @@ class AuthService {
   ) async {
     String res = "Some Error Occured";
     if (username.isEmpty || email.isEmpty || password.isEmpty) {
-      return "Error Empty";
+      return "Empty Field Not Allowed";
     } else {
       try {
         UserCredential userCred = await _auth.createUserWithEmailAndPassword(
