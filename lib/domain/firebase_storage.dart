@@ -13,4 +13,18 @@ class StorageService {
     TaskSnapshot snap = await ref.putData(file);
     return await snap.ref.getDownloadURL();
   }
+
+  Future<String?> storePostImage(String id, Uint8List file) async {
+    Reference ref = _storage
+        .ref()
+        .child('postImage')
+        .child(_auth.currentUser!.uid)
+        .child(id);
+    TaskSnapshot snap = await ref.putData(file);
+    return await snap.ref.getDownloadURL();
+  }
+
+  deletePostImage(String postImageUrl) async {
+    await _storage.refFromURL(postImageUrl).delete();
+  }
 }

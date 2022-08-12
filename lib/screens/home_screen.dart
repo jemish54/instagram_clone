@@ -1,4 +1,6 @@
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
+import 'package:instagram_clone/domain/database_service.dart';
+import 'package:instagram_clone/model/post.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -7,24 +9,42 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-          child: Column(
-        children: [
-          SizedBox(
-            height: 96,
-            child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                scrollDirection: Axis.horizontal,
-                itemBuilder: ((context, index) {
-                  return const ProfileStory(
-                    isViewed: false,
-                  );
-                })),
-          ),
-          Expanded(
-            child: ListView.builder(
-                itemBuilder: ((context, index) => const PostItem())),
-          )
-        ],
+          child: SingleChildScrollView(
+        physics: const ScrollPhysics(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 96,
+              child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: ((context, index) {
+                    return ProfileStory(
+                      isViewed: index.isEven,
+                    );
+                  })),
+            ),
+            StreamBuilder<List<Post>>(
+              stream: DatabaseService().getUserPosts(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: snapshot.data!.length,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemBuilder: ((context, index) {
+                        return PostItem(
+                          post: snapshot.data![index],
+                        );
+                      }));
+                } else {
+                  return const Center(child: CircularProgressIndicator());
+                }
+              },
+            )
+          ],
+        ),
       )),
     );
   }
@@ -46,7 +66,7 @@ class ProfileStory extends StatelessWidget {
                 depth: 8,
                 border: isViewed
                     ? NeumorphicBorder(color: Colors.grey[400], width: 2)
-                    : const NeumorphicBorder(color: Colors.blue, width: 2),
+                    : const NeumorphicBorder(color: Colors.blue, width: 3),
                 color: Colors.white,
                 surfaceIntensity: 0,
                 shadowLightColor: Colors.white,
@@ -69,7 +89,8 @@ class ProfileStory extends StatelessWidget {
 }
 
 class PostItem extends StatelessWidget {
-  const PostItem({Key? key}) : super(key: key);
+  final Post post;
+  const PostItem({Key? key, required this.post}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -87,29 +108,37 @@ class PostItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const ListTile(
-              leading: CircleAvatar(
+            ListTile(
+              leading: const CircleAvatar(
                   radius: 26,
                   foregroundImage: NetworkImage(
                       'https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cHJvZmlsZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60')),
-              title: Text('Jemish Mavani'),
-              subtitle: Text('@jamespatel54'),
-              contentPadding: EdgeInsets.only(top: 8, left: 20),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                    'https://images.unsplash.com/photo-1619360142632-031d811d1678?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHx0b3BpYy1mZWVkfDQ3fDZzTVZqVExTa2VRfHxlbnwwfHx8fA%3D%3D&auto=format&fit=crop&w=500&q=60',
-                    fit: BoxFit.fitWidth),
+              title: const Text('Jemish Mavani'),
+              subtitle: const Text('@jamespatel54'),
+              trailing: IconButton(
+                onPressed: () {
+                  DatabaseService().deletePost(post.id, post.postImageUrl);
+                },
+                icon: const Icon(Icons.delete_forever_rounded),
               ),
+              contentPadding: const EdgeInsets.only(top: 8, left: 20),
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 8),
-              child: Text(
-                  "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse convallis dolor volutpat consectetur vulputate. Nulla luctus placerat purus vitae ultrices."),
-            ),
+            post.postImageUrl != null
+                ? Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(post.postImageUrl!)),
+                  )
+                : const SizedBox(),
+            post.postCaption.isNotEmpty
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 25.0, vertical: 8),
+                    child: Text(post.postCaption),
+                  )
+                : const SizedBox(),
             const SizedBox(
               height: 10,
             ),
