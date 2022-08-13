@@ -2,6 +2,7 @@ import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:instagram_clone/screens/add_post_screen.dart';
 import 'package:instagram_clone/screens/empty_screen.dart';
 import 'package:instagram_clone/screens/home_screen.dart';
+import 'package:instagram_clone/screens/profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -17,7 +18,7 @@ class _MainScreenState extends State<MainScreen> {
     EmptyScreen(index: 1),
     AddPostScreen(),
     EmptyScreen(index: 3),
-    EmptyScreen(index: 4),
+    ProfileScreen(),
   ];
 
   @override

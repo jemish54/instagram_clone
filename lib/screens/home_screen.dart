@@ -15,7 +15,7 @@ class HomeScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              height: 96,
+              height: 115,
               child: ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   scrollDirection: Axis.horizontal,
@@ -26,7 +26,7 @@ class HomeScreen extends StatelessWidget {
                   })),
             ),
             StreamBuilder<List<Post>>(
-              stream: DatabaseService().getUserPosts(),
+              stream: null,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return ListView.builder(
@@ -39,7 +39,14 @@ class HomeScreen extends StatelessWidget {
                         );
                       }));
                 } else {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(
+                      child: Text(
+                    'Implementation is not done yet',
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ));
                 }
               },
             )
@@ -56,33 +63,47 @@ class ProfileStory extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
-      child: SizedBox(
-        width: 56,
-        height: 56,
-        child: Neumorphic(
-            style: NeumorphicStyle(
-                depth: 8,
-                border: isViewed
-                    ? NeumorphicBorder(color: Colors.grey[400], width: 2)
-                    : const NeumorphicBorder(color: Colors.blue, width: 3),
-                color: Colors.white,
-                surfaceIntensity: 0,
-                shadowLightColor: Colors.white,
-                shape: NeumorphicShape.convex,
-                boxShape:
-                    NeumorphicBoxShape.roundRect(BorderRadius.circular(16))),
-            child: Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  'https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cHJvZmlsZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60',
-                  fit: BoxFit.cover,
-                ),
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 20, right: 10),
+        child: Column(
+          children: [
+            SizedBox(
+              width: 64,
+              height: 64,
+              child: Neumorphic(
+                  style: NeumorphicStyle(
+                      depth: 8,
+                      border: isViewed
+                          ? NeumorphicBorder(color: Colors.grey[400], width: 2)
+                          : const NeumorphicBorder(
+                              color: Colors.blue, width: 3),
+                      color: Colors.white,
+                      surfaceIntensity: 0,
+                      shadowLightColor: Colors.white,
+                      shape: NeumorphicShape.convex,
+                      boxShape: NeumorphicBoxShape.roundRect(
+                          BorderRadius.circular(16))),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        'https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cHJvZmlsZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  )),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'jemspatel540',
+              style: TextStyle(
+                fontSize: 12,
               ),
-            )),
+            ),
+          ],
+        ),
       ),
     );
   }
