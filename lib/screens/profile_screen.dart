@@ -2,6 +2,7 @@ import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram_clone/domain/authentication.dart';
 import 'package:instagram_clone/domain/database_service.dart';
+import 'package:instagram_clone/model/app_user.dart';
 import 'package:instagram_clone/model/post.dart';
 import 'package:instagram_clone/screens/login_screen.dart';
 import 'package:instagram_clone/screens/post_detail_screen.dart';
@@ -31,88 +32,109 @@ class _MyProfileSectionState extends ConsumerState<MyProfileSection> {
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        Stack(
-          children: [
-            const SizedBox(
-              height: 230,
-              width: double.infinity,
-            ),
-            Positioned(
-                child: Image.network(
-              'https://images.unsplash.com/photo-1519638399535-1b036603ac77?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8YW5pbWV8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60',
-              fit: BoxFit.cover,
-              height: 180,
-              width: double.infinity,
-            )),
-            Positioned(
-                bottom: 0,
-                left: 30,
-                child: Neumorphic(
-                  style: const NeumorphicStyle(
-                    color: Colors.white,
-                    depth: 8,
-                    lightSource: LightSource.top,
-                    border: NeumorphicBorder(color: Colors.white, width: 2),
-                    boxShape: NeumorphicBoxShape.circle(),
-                    shape: NeumorphicShape.convex,
+        FutureBuilder<AppUser>(
+          future: ref.watch(authServiceProvider).currentAppUser(),
+          builder: (context, snapshot) => Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Stack(
+                children: [
+                  const SizedBox(
+                    height: 230,
+                    width: double.infinity,
                   ),
-                  child: Image.network(
-                    'https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cHJvZmlsZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60',
-                    width: 80,
-                    height: 80,
+                  Positioned(
+                      child: Image.network(
+                    'https://images.unsplash.com/photo-1519638399535-1b036603ac77?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8YW5pbWV8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60',
                     fit: BoxFit.cover,
-                  ),
-                )),
-            Positioned(
-                right: 0,
-                bottom: 0,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Row(
-                    children: [
-                      CustomElevatedButton(
-                        iconData: Icons.edit_rounded,
-                        onPressed: () {},
-                      ),
-                      CustomElevatedButton(
-                        iconData: Icons.logout_rounded,
-                        onPressed: () async {
-                          await ref.read(authServiceProvider).signOutUser();
-                          if (mounted) {
-                            Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => const LoginScreen()));
-                          }
-                        },
-                      )
-                    ],
-                  ),
-                )),
-          ],
-        ),
-        const Padding(
-          padding: EdgeInsets.only(left: 20, top: 12),
-          child: Text(
-            "Jemish Mavani",
-            style: TextStyle(fontSize: 18),
+                    height: 180,
+                    width: double.infinity,
+                  )),
+                  Positioned(
+                      bottom: 0,
+                      left: 30,
+                      child: Neumorphic(
+                        style: const NeumorphicStyle(
+                          color: Colors.white,
+                          depth: 8,
+                          lightSource: LightSource.top,
+                          border:
+                              NeumorphicBorder(color: Colors.white, width: 2),
+                          boxShape: NeumorphicBoxShape.circle(),
+                          shape: NeumorphicShape.convex,
+                        ),
+                        child: Image.network(
+                          'https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cHJvZmlsZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60',
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                        ),
+                      )),
+                  Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Row(
+                          children: [
+                            CustomElevatedButton(
+                              iconData: Icons.edit_rounded,
+                              onPressed: () {},
+                            ),
+                            CustomElevatedButton(
+                              iconData: Icons.logout_rounded,
+                              onPressed: () async {
+                                await ref
+                                    .read(authServiceProvider)
+                                    .signOutUser();
+                                if (mounted) {
+                                  Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) => const LoginScreen()));
+                                }
+                              },
+                            )
+                          ],
+                        ),
+                      )),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 20, top: 12),
+                child: Text(
+                  snapshot.hasData ? snapshot.data!.username : 'Null',
+                  style: const TextStyle(fontSize: 18),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.only(left: 20, top: 2),
+                child: Text(
+                  "@jamespatel54",
+                  style: TextStyle(fontSize: 14),
+                ),
+              ),
+              snapshot.hasData
+                  ? snapshot.data!.bio.isEmpty
+                      ? const SizedBox()
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 20),
+                          child: Text(
+                            snapshot.data!.bio,
+                            maxLines: 3,
+                          ),
+                        )
+                  : const SizedBox(),
+              ConnectionsCard(
+                followersCount:
+                    snapshot.hasData ? snapshot.data!.followers.length : 0,
+                followingCount:
+                    snapshot.hasData ? snapshot.data!.following.length : 0,
+              ),
+            ],
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.only(left: 20, top: 2),
-          child: Text(
-            "@jamespatel54",
-            style: TextStyle(fontSize: 14),
-          ),
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-          child: Text(
-            'hcabjsbkjxas xhzjcbzx kbzuxnmzx jzbxc,m suiac xsnmc scc h cnms ciusax cm,an xuiasxs,nm xhaxhasx xusxks',
-            maxLines: 3,
-          ),
-        ),
-        const ConnectionsCard(),
         StreamBuilder<List<Post>>(
             stream: DatabaseService()
                 .getUserPosts(ref.read(authServiceProvider).user!.uid),
@@ -179,7 +201,11 @@ Widget profilePostItem(Post post, VoidCallback onTap) {
 }
 
 class ConnectionsCard extends StatelessWidget {
-  const ConnectionsCard({Key? key}) : super(key: key);
+  final int followingCount;
+  final int followersCount;
+  const ConnectionsCard(
+      {Key? key, required this.followingCount, required this.followersCount})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -198,32 +224,32 @@ class ConnectionsCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Column(
-                children: const [
+                children: [
                   Text(
-                    '54',
-                    style: TextStyle(
+                    '$followersCount',
+                    style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.blue),
                   ),
-                  SizedBox(height: 4),
-                  Text(
+                  const SizedBox(height: 4),
+                  const Text(
                     'Followers',
                     style: TextStyle(fontSize: 14),
                   ),
                 ],
               ),
               Column(
-                children: const [
+                children: [
                   Text(
-                    '09',
-                    style: TextStyle(
+                    '$followingCount',
+                    style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.blue),
                   ),
-                  SizedBox(height: 4),
-                  Text(
+                  const SizedBox(height: 4),
+                  const Text(
                     'Following',
                     style: TextStyle(fontSize: 14),
                   ),

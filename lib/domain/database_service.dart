@@ -2,13 +2,19 @@ import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:instagram_clone/domain/firebase_storage.dart';
+import 'package:instagram_clone/domain/storage_service.dart';
+import 'package:instagram_clone/model/app_user.dart';
 import 'package:instagram_clone/model/post.dart';
 import 'package:uuid/uuid.dart';
 
 class DatabaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<AppUser> getUserById(String uId) async {
+    final snap = await _firestore.collection('users').doc(uId).get();
+    return AppUser.toAppUser(snap);
+  }
 
   storePost(Uint8List? image, String caption) async {
     if (image == null && caption.isEmpty) return;

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram_clone/model/app_user.dart';
 
 final authServiceProvider = Provider<AuthService>(((ref) => AuthService()));
 final authStateStreamProvider = StreamProvider<User?>(
@@ -14,6 +15,11 @@ class AuthService {
 
   User? get user => _auth.currentUser;
 
+  Future<AppUser> currentAppUser() async {
+    final snap = await _firestore.collection('users').doc(user!.uid).get();
+    return AppUser.toAppUser(snap);
+  }
+
   Future<String> signUpUser(
     String username,
     String email,
@@ -26,12 +32,9 @@ class AuthService {
       try {
         UserCredential userCred = await _auth.createUserWithEmailAndPassword(
             email: email, password: password);
-        await _firestore.collection('users').doc(userCred.user!.uid).set({
-          'uid': userCred.user!.uid,
-          'username': username,
-          'followers': [],
-          'following': [],
-        });
+        await _firestore.collection('users').doc(userCred.user!.uid).set(
+            AppUser(userCred.user!.uid, username, '', null, null, [], [])
+                .toJson());
         res = "Success";
       } catch (e) {
         res = e.toString();
