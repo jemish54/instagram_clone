@@ -1,4 +1,5 @@
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram_clone/domain/authentication.dart';
 import 'package:instagram_clone/screens/home_screen.dart';
 import 'package:instagram_clone/screens/login_screen.dart';
@@ -37,21 +38,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
             padding: const EdgeInsets.all(10.0),
             child: Container(
               constraints: const BoxConstraints(maxWidth: webScreenBreakpoint),
-              child: signUpSection(
-                  context: context,
-                  usernameController: _usernameController,
-                  emailController: _emailController,
-                  passwordController: _passwordController,
-                  onSignUpClicked: () async {
-                    String res = await AuthService().signUpUser(
-                        _usernameController.text,
-                        _emailController.text,
-                        _passwordController.text);
-                    if (mounted && res != 'Success') {
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(SnackBar(content: Text(res)));
-                    }
-                  }),
+              child: Consumer(
+                builder: (context, ref, child) => signUpSection(
+                    context: context,
+                    usernameController: _usernameController,
+                    emailController: _emailController,
+                    passwordController: _passwordController,
+                    onSignUpClicked: () async {
+                      String res = await ref
+                          .read(authServiceProvider)
+                          .signUpUser(_usernameController.text,
+                              _emailController.text, _passwordController.text);
+                      if (mounted && res == 'Success') {
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                            builder: ((context) => const MainScreen())));
+                      } else {
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(SnackBar(content: Text(res)));
+                      }
+                    }),
+              ),
             ),
           ),
         ),

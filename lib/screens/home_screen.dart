@@ -26,7 +26,7 @@ class HomeScreen extends StatelessWidget {
                   })),
             ),
             StreamBuilder<List<Post>>(
-              stream: null,
+              stream: DatabaseService().getFeedPosts(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return ListView.builder(
@@ -117,84 +117,88 @@ class PostItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(15.0),
-      child: Neumorphic(
-        style: NeumorphicStyle(
-            depth: 8,
-            color: Colors.white,
-            surfaceIntensity: 0,
-            shadowLightColor: Colors.white,
-            shape: NeumorphicShape.concave,
-            boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(12))),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ListTile(
-              leading: const CircleAvatar(
-                  radius: 26,
-                  foregroundImage: NetworkImage(
-                      'https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cHJvZmlsZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60')),
-              title: const Text('Jemish Mavani'),
-              subtitle: const Text('@jamespatel54'),
-              trailing: IconButton(
-                onPressed: () {
-                  DatabaseService().deletePost(post.id, post.postImageUrl);
-                },
-                icon: const Icon(Icons.delete_forever_rounded),
+      child: GestureDetector(
+        onDoubleTap: () {},
+        child: Neumorphic(
+          style: NeumorphicStyle(
+              depth: 8,
+              color: Colors.white,
+              surfaceIntensity: 0,
+              shadowLightColor: Colors.white,
+              shape: NeumorphicShape.concave,
+              boxShape:
+                  NeumorphicBoxShape.roundRect(BorderRadius.circular(12))),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ListTile(
+                leading: const CircleAvatar(
+                    radius: 26,
+                    foregroundImage: NetworkImage(
+                        'https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cHJvZmlsZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60')),
+                title: const Text('Jemish Mavani'),
+                subtitle: const Text('@jamespatel54'),
+                trailing: IconButton(
+                  onPressed: () {
+                    DatabaseService().deletePost(post.id, post.imageUrl);
+                  },
+                  icon: const Icon(Icons.delete_forever_rounded),
+                ),
+                contentPadding: const EdgeInsets.only(top: 8, left: 20),
               ),
-              contentPadding: const EdgeInsets.only(top: 8, left: 20),
-            ),
-            post.postImageUrl != null
-                ? Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(post.postImageUrl!)),
-                  )
-                : const SizedBox(),
-            post.postCaption.isNotEmpty
-                ? Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 25.0, vertical: 8),
-                    child: Text(post.postCaption),
-                  )
-                : const SizedBox(),
-            const SizedBox(
-              height: 10,
-            ),
-            Container(
-              color: Colors.blue.withAlpha(18),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Icon(
-                      Icons.favorite_rounded,
-                      color: Colors.blue,
-                    ),
-                    Icon(
-                      Icons.chat_bubble_rounded,
-                      color: Colors.blue,
-                    ),
-                    Icon(
-                      Icons.send_rounded,
-                      color: Colors.blue,
-                    ),
-                    SizedBox(
-                      width: 40,
-                    ),
-                    Icon(
-                      Icons.bookmark_outline_rounded,
-                      color: Colors.blue,
+              post.imageUrl != null
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
+                      child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(post.imageUrl!)),
                     )
-                  ],
+                  : const SizedBox(),
+              post.caption.isNotEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 25.0, vertical: 8),
+                      child: Text(post.caption),
+                    )
+                  : const SizedBox(),
+              const SizedBox(
+                height: 10,
+              ),
+              Container(
+                color: Colors.blue.withAlpha(18),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Icon(
+                        Icons.favorite_rounded,
+                        color: Colors.blue,
+                      ),
+                      Icon(
+                        Icons.chat_bubble_rounded,
+                        color: Colors.blue,
+                      ),
+                      Icon(
+                        Icons.send_rounded,
+                        color: Colors.blue,
+                      ),
+                      SizedBox(
+                        width: 40,
+                      ),
+                      Icon(
+                        Icons.bookmark_outline_rounded,
+                        color: Colors.blue,
+                      )
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

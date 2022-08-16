@@ -1,9 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final authServiceProvider = Provider<AuthService>(((ref) => AuthService()));
+final authStateStreamProvider = StreamProvider<User?>(
+    (ref) => ref.read(authServiceProvider).authStateStream);
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Stream<User?> get authStateStream => _auth.authStateChanges();
+
+  User? get user => _auth.currentUser;
 
   Future<String> signUpUser(
     String username,
@@ -48,5 +57,9 @@ class AuthService {
       }
       return res;
     }
+  }
+
+  Future<void> signOutUser() async {
+    await _auth.signOut();
   }
 }

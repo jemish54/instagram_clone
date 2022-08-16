@@ -1,7 +1,8 @@
 class Post {
   String id;
-  String? postImageUrl;
-  String postCaption;
-
-  Post(this.id, this.postImageUrl, this.postCaption);
+  String userId;
+  String? imageUrl;
+  String caption;
+  List likes;
+  Post(this.id, this.userId, this.imageUrl, this.caption, this.likes);
 }

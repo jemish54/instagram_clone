@@ -1,26 +1,32 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram_clone/domain/authentication.dart';
 import 'package:instagram_clone/domain/database_service.dart';
 import 'package:instagram_clone/model/post.dart';
+import 'package:instagram_clone/screens/login_screen.dart';
+import 'package:instagram_clone/screens/post_detail_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: SafeArea(
-        child: StreamBuilder(
-            stream: FirebaseAuth.instance.authStateChanges(),
-            builder: ((context, snapshot) => const MyProfileSection())),
+        child: MyProfileSection(),
       ),
     );
   }
 }
 
-class MyProfileSection extends StatelessWidget {
+class MyProfileSection extends ConsumerStatefulWidget {
   const MyProfileSection({Key? key}) : super(key: key);
 
+  @override
+  ConsumerState<MyProfileSection> createState() => _MyProfileSectionState();
+}
+
+class _MyProfileSectionState extends ConsumerState<MyProfileSection> {
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -69,8 +75,16 @@ class MyProfileSection extends StatelessWidget {
                         onPressed: () {},
                       ),
                       CustomElevatedButton(
-                        iconData: Icons.settings,
-                        onPressed: () {},
+                        iconData: Icons.logout_rounded,
+                        onPressed: () async {
+                          await ref.read(authServiceProvider).signOutUser();
+                          if (mounted) {
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const LoginScreen()));
+                          }
+                        },
                       )
                     ],
                   ),
@@ -100,7 +114,8 @@ class MyProfileSection extends StatelessWidget {
         ),
         const ConnectionsCard(),
         StreamBuilder<List<Post>>(
-            stream: DatabaseService().getUserPosts(),
+            stream: DatabaseService()
+                .getUserPosts(ref.read(authServiceProvider).user!.uid),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 return GridView.builder(
@@ -114,10 +129,18 @@ class MyProfileSection extends StatelessWidget {
                     padding: const EdgeInsets.all(15),
                     physics: const NeverScrollableScrollPhysics(),
                     itemBuilder: ((context, index) {
-                      return profilePostItem(snapshot.data![index]);
+                      return profilePostItem(snapshot.data![index], () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                PostDetailScreen(post: snapshot.data![index]),
+                          ),
+                        );
+                      });
                     }));
               } else {
-                return const CircularProgressIndicator();
+                return const Center(child: CircularProgressIndicator());
               }
             })
       ],
@@ -125,30 +148,33 @@ class MyProfileSection extends StatelessWidget {
   }
 }
 
-Widget profilePostItem(Post post) {
-  return Neumorphic(
-    style: const NeumorphicStyle(
-      color: Colors.white,
-      surfaceIntensity: 0,
-      depth: 4,
-      shape: NeumorphicShape.convex,
+Widget profilePostItem(Post post, VoidCallback onTap) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Neumorphic(
+      style: const NeumorphicStyle(
+        color: Colors.white,
+        surfaceIntensity: 0,
+        depth: 4,
+        shape: NeumorphicShape.convex,
+      ),
+      child: post.imageUrl != null
+          ? Image.network(
+              post.imageUrl!,
+              fit: BoxFit.cover,
+            )
+          : Center(
+              child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                post.caption,
+                textAlign: TextAlign.center,
+                maxLines: 5,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12),
+              ),
+            )),
     ),
-    child: post.postImageUrl != null
-        ? Image.network(
-            post.postImageUrl!,
-            fit: BoxFit.cover,
-          )
-        : Center(
-            child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              post.postCaption,
-              textAlign: TextAlign.center,
-              maxLines: 5,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 12),
-            ),
-          )),
   );
 }
 
@@ -213,7 +239,7 @@ class ConnectionsCard extends StatelessWidget {
 
 class CustomElevatedButton extends StatelessWidget {
   final IconData iconData;
-  final Function onPressed;
+  final VoidCallback onPressed;
 
   const CustomElevatedButton({
     Key? key,
@@ -227,9 +253,7 @@ class CustomElevatedButton extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: NeumorphicButton(
         padding: const EdgeInsets.all(6),
-        onPressed: () {
-          onPressed();
-        },
+        onPressed: onPressed,
         style: NeumorphicStyle(
             color: Colors.white,
             boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(8)),
