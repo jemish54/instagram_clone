@@ -133,11 +133,11 @@ class PostItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               ListTile(
-                leading: const CircleAvatar(
+                leading: CircleAvatar(
                     radius: 26,
-                    foregroundImage: NetworkImage(
+                    foregroundImage: NetworkImage(post.userProfileImageUrl ??
                         'https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cHJvZmlsZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60')),
-                title: const Text('Jemish Mavani'),
+                title: Text(post.userName),
                 subtitle: const Text('@jamespatel54'),
                 trailing: IconButton(
                   onPressed: () {

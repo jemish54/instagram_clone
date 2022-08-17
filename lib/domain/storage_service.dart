@@ -14,6 +14,15 @@ class StorageService {
     return await snap.ref.getDownloadURL();
   }
 
+  Future<String?> storeProfileCoverImage(Uint8List file) async {
+    Reference ref = _storage
+        .ref()
+        .child('profileCoverImages')
+        .child(_auth.currentUser!.uid);
+    TaskSnapshot snap = await ref.putData(file);
+    return await snap.ref.getDownloadURL();
+  }
+
   Future<String?> storePostImage(String id, Uint8List file) async {
     Reference ref = _storage
         .ref()

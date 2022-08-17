@@ -4,6 +4,7 @@ import 'package:instagram_clone/domain/authentication.dart';
 import 'package:instagram_clone/domain/database_service.dart';
 import 'package:instagram_clone/model/app_user.dart';
 import 'package:instagram_clone/model/post.dart';
+import 'package:instagram_clone/screens/edit_profile_screen.dart';
 import 'package:instagram_clone/screens/login_screen.dart';
 import 'package:instagram_clone/screens/post_detail_screen.dart';
 
@@ -32,8 +33,8 @@ class _MyProfileSectionState extends ConsumerState<MyProfileSection> {
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        FutureBuilder<AppUser>(
-          future: ref.watch(authServiceProvider).currentAppUser(),
+        StreamBuilder<AppUser>(
+          stream: ref.watch(authServiceProvider).currentAppUser(),
           builder: (context, snapshot) => Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -45,7 +46,10 @@ class _MyProfileSectionState extends ConsumerState<MyProfileSection> {
                   ),
                   Positioned(
                       child: Image.network(
-                    'https://images.unsplash.com/photo-1519638399535-1b036603ac77?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8YW5pbWV8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60',
+                    snapshot.hasData
+                        ? snapshot.data!.coverImageUrl ??
+                            'https://images.unsplash.com/photo-1519638399535-1b036603ac77?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8YW5pbWV8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60'
+                        : 'https://images.unsplash.com/photo-1519638399535-1b036603ac77?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8YW5pbWV8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60',
                     fit: BoxFit.cover,
                     height: 180,
                     width: double.infinity,
@@ -64,7 +68,10 @@ class _MyProfileSectionState extends ConsumerState<MyProfileSection> {
                           shape: NeumorphicShape.convex,
                         ),
                         child: Image.network(
-                          'https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cHJvZmlsZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60',
+                          snapshot.hasData
+                              ? snapshot.data!.profileImageUrl ??
+                                  'https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cHJvZmlsZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60'
+                              : 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cHJvZmlsZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60',
                           width: 80,
                           height: 80,
                           fit: BoxFit.cover,
@@ -79,7 +86,14 @@ class _MyProfileSectionState extends ConsumerState<MyProfileSection> {
                           children: [
                             CustomElevatedButton(
                               iconData: Icons.edit_rounded,
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => EditProfileScreen(
+                                          user: snapshot.data!)),
+                                );
+                              },
                             ),
                             CustomElevatedButton(
                               iconData: Icons.logout_rounded,
@@ -89,9 +103,10 @@ class _MyProfileSectionState extends ConsumerState<MyProfileSection> {
                                     .signOutUser();
                                 if (mounted) {
                                   Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (_) => const LoginScreen()));
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) => const LoginScreen()),
+                                  );
                                 }
                               },
                             )

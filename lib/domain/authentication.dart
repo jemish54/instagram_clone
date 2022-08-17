@@ -1,6 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram_clone/domain/storage_service.dart';
 import 'package:instagram_clone/model/app_user.dart';
 
 final authServiceProvider = Provider<AuthService>(((ref) => AuthService()));
@@ -15,9 +18,10 @@ class AuthService {
 
   User? get user => _auth.currentUser;
 
-  Future<AppUser> currentAppUser() async {
-    final snap = await _firestore.collection('users').doc(user!.uid).get();
-    return AppUser.toAppUser(snap);
+  Stream<AppUser> currentAppUser() {
+    final userStream =
+        _firestore.collection('users').doc(user!.uid).snapshots();
+    return userStream.map((event) => AppUser.toAppUser(event));
   }
 
   Future<String> signUpUser(
@@ -59,6 +63,30 @@ class AuthService {
         res = e.toString();
       }
       return res;
+    }
+  }
+
+  Future<void> editUserDetails(String username, String bio,
+      Uint8List? profileImage, Uint8List? coverImage) async {
+    final profileImageUrl = profileImage != null
+        ? await StorageService().storeProfileImage(profileImage)
+        : null;
+    final coverImageUrl = coverImage != null
+        ? await StorageService().storeProfileCoverImage(coverImage)
+        : null;
+    final userDataRef = _firestore.collection('users').doc(user!.uid);
+    final userOldData = AppUser.toAppUser(await userDataRef.get());
+    if (username != userOldData.username) {
+      userDataRef.update({'name': username});
+    }
+    if (bio != userOldData.bio) {
+      userDataRef.update({'bio': bio});
+    }
+    if (profileImageUrl != null) {
+      userDataRef.update({'profileImageUrl': profileImageUrl});
+    }
+    if (coverImageUrl != null) {
+      userDataRef.update({'coverImageUrl': coverImageUrl});
     }
   }
 

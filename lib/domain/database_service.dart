@@ -23,13 +23,16 @@ class DatabaseService {
     if (image != null) {
       imageUrl = await StorageService().storePostImage(id, image);
     }
-    await _firestore.collection('posts').doc(id).set({
-      'postId': id,
-      'postUserId': _auth.currentUser!.uid,
-      'postImageUrl': imageUrl,
-      'postCaption': caption,
-      'postLikes': [],
-    });
+    AppUser user = await getUserById(_auth.currentUser!.uid);
+    await _firestore.collection('posts').doc(id).set(Post(
+          id,
+          user.uid,
+          user.username,
+          user.profileImageUrl,
+          imageUrl,
+          caption,
+          [],
+        ).toJson());
   }
 
   deletePost(String postId, String? postImageUrl) async {
@@ -43,31 +46,17 @@ class DatabaseService {
     Stream<QuerySnapshot> postsStream =
         _firestore.collection('posts').snapshots();
 
-    return postsStream.map((event) => event.docs
-        .map((e) => Post(
-              e['postId'],
-              e['postUserId'],
-              e['postImageUrl'],
-              e['postCaption'],
-              e['postLikes'],
-            ))
-        .toList());
+    return postsStream
+        .map((event) => event.docs.map((e) => Post.toAppUser(e)).toList());
   }
 
   Stream<List<Post>> getUserPosts(String uid) {
     Stream<QuerySnapshot> postsStream = _firestore
         .collection('posts')
-        .where('postUserId', isEqualTo: uid)
+        .where('userId', isEqualTo: uid)
         .snapshots();
 
-    return postsStream.map((event) => event.docs
-        .map((e) => Post(
-              e['postId'],
-              e['postUserId'],
-              e['postImageUrl'],
-              e['postCaption'],
-              e['postLikes'],
-            ))
-        .toList());
+    return postsStream
+        .map((event) => event.docs.map((e) => Post.toAppUser(e)).toList());
   }
 }
