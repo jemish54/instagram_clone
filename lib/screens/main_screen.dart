@@ -2,8 +2,8 @@ import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:instagram_clone/screens/add_post_screen.dart';
 import 'package:instagram_clone/screens/empty_screen.dart';
 import 'package:instagram_clone/screens/home_screen.dart';
-import 'package:instagram_clone/screens/other_profile_screen.dart';
 import 'package:instagram_clone/screens/profile_screen.dart';
+import 'package:instagram_clone/screens/search_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -16,7 +16,7 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   late final screenList = const [
     HomeScreen(),
-    OtherProfileScreen(),
+    SearchScreen(),
     AddPostScreen(),
     EmptyScreen(index: 3),
     ProfileScreen(),

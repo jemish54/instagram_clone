@@ -1,5 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram_clone/domain/authentication.dart';
 import 'package:instagram_clone/domain/database_service.dart';
+import 'package:instagram_clone/model/app_user.dart';
 import 'package:instagram_clone/model/post.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -25,30 +29,36 @@ class HomeScreen extends StatelessWidget {
                     );
                   })),
             ),
-            StreamBuilder<List<Post>>(
-              stream: DatabaseService().getFeedPosts(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: snapshot.data!.length,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemBuilder: ((context, index) {
-                        return PostItem(
-                          post: snapshot.data![index],
-                        );
-                      }));
-                } else {
-                  return const Center(
-                      child: Text(
-                    'Implementation is not done yet',
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ));
-                }
-              },
+            StreamBuilder<AppUser>(
+              stream: AuthService().currentAppUser(),
+              builder: (context, snapshot) => snapshot.hasData
+                  ? StreamBuilder<List<Post>>(
+                      stream: DatabaseService()
+                          .getFeedPosts(snapshot.data!.following),
+                      builder: (context, postList) {
+                        if (postList.hasData) {
+                          return ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: postList.data!.length,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemBuilder: ((context, index) {
+                                return PostItem(
+                                  post: postList.data![index],
+                                );
+                              }));
+                        } else {
+                          return const Center(
+                              child: Text(
+                            'Implementation is not done yet',
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ));
+                        }
+                      },
+                    )
+                  : Container(),
             )
           ],
         ),
@@ -132,20 +142,28 @@ class PostItem extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ListTile(
-                leading: CircleAvatar(
+              FutureBuilder<AppUser>(
+                future: DatabaseService().getUserById(post.userId),
+                builder: (context, postUser) => ListTile(
+                  leading: CircleAvatar(
                     radius: 26,
-                    foregroundImage: NetworkImage(post.userProfileImageUrl ??
-                        'https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cHJvZmlsZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60')),
-                title: Text(post.userName),
-                subtitle: const Text('@jamespatel54'),
-                trailing: IconButton(
-                  onPressed: () {
-                    DatabaseService().deletePost(post.id, post.imageUrl);
-                  },
-                  icon: const Icon(Icons.delete_forever_rounded),
+                    backgroundImage: postUser.hasData
+                        ? postUser.data!.profileImageUrl != null
+                            ? NetworkImage(postUser.data!.profileImageUrl!)
+                            : null
+                        : null,
+                  ),
+                  title: Text(
+                      postUser.hasData ? postUser.data!.username : 'username'),
+                  subtitle: const Text('@jamespatel54'),
+                  trailing: IconButton(
+                    onPressed: () {
+                      DatabaseService().deletePost(post.id, post.imageUrl);
+                    },
+                    icon: const Icon(Icons.delete_forever_rounded),
+                  ),
+                  contentPadding: const EdgeInsets.only(top: 8, left: 20),
                 ),
-                contentPadding: const EdgeInsets.only(top: 8, left: 20),
               ),
               post.imageUrl != null
                   ? Padding(
@@ -170,30 +188,50 @@ class PostItem extends StatelessWidget {
                 color: Colors.blue.withAlpha(18),
                 child: Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Icon(
-                        Icons.favorite_rounded,
-                        color: Colors.blue,
-                      ),
-                      Icon(
-                        Icons.chat_bubble_rounded,
-                        color: Colors.blue,
-                      ),
-                      Icon(
-                        Icons.send_rounded,
-                        color: Colors.blue,
-                      ),
-                      SizedBox(
-                        width: 40,
-                      ),
-                      Icon(
-                        Icons.bookmark_outline_rounded,
-                        color: Colors.blue,
-                      )
-                    ],
+                      const EdgeInsets.symmetric(vertical: 2, horizontal: 20),
+                  child: Consumer(
+                    builder: (context, ref, child) => Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Builder(builder: (context) {
+                              final String userUid =
+                                  ref.read(authServiceProvider).user!.uid;
+                              final isLiked = post.likes.contains(userUid);
+                              return IconButton(
+                                onPressed: () async {
+                                  await DatabaseService()
+                                      .likeEvent(isLiked, post.id, userUid);
+                                },
+                                icon: Icon(
+                                  isLiked
+                                      ? Icons.favorite_rounded
+                                      : Icons.favorite_border_rounded,
+                                  color: Colors.blue,
+                                ),
+                              );
+                            }),
+                            Text('${post.likes.length}'),
+                          ],
+                        ),
+                        const Icon(
+                          Icons.chat_bubble_rounded,
+                          color: Colors.blue,
+                        ),
+                        const Icon(
+                          Icons.send_rounded,
+                          color: Colors.blue,
+                        ),
+                        const SizedBox(
+                          width: 40,
+                        ),
+                        const Icon(
+                          Icons.bookmark_outline_rounded,
+                          color: Colors.blue,
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ),

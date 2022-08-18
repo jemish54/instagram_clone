@@ -27,8 +27,6 @@ class DatabaseService {
     await _firestore.collection('posts').doc(id).set(Post(
           id,
           user.uid,
-          user.username,
-          user.profileImageUrl,
           imageUrl,
           caption,
           [],
@@ -42,12 +40,14 @@ class DatabaseService {
     }
   }
 
-  Stream<List<Post>> getFeedPosts() {
-    Stream<QuerySnapshot> postsStream =
-        _firestore.collection('posts').snapshots();
-
-    return postsStream
-        .map((event) => event.docs.map((e) => Post.toAppUser(e)).toList());
+  Stream<List<Post>> getFeedPosts(List following) {
+    if (following.isEmpty) return const Stream.empty();
+    return _firestore
+        .collection('posts')
+        .where('userId', whereIn: following)
+        .snapshots()
+        .map((postSnap) =>
+            postSnap.docs.map((post) => Post.toPost(post)).toList());
   }
 
   Stream<List<Post>> getUserPosts(String uid) {
@@ -57,6 +57,43 @@ class DatabaseService {
         .snapshots();
 
     return postsStream
-        .map((event) => event.docs.map((e) => Post.toAppUser(e)).toList());
+        .map((event) => event.docs.map((e) => Post.toPost(e)).toList());
+  }
+
+  followEvent(bool isFollowing, String uId) async {
+    final ref = _firestore.collection('users').doc(_auth.currentUser!.uid);
+    if (isFollowing) {
+      await ref.update({
+        'following': FieldValue.arrayRemove([uId])
+      });
+    } else {
+      await ref.update({
+        'following': FieldValue.arrayUnion([uId])
+      });
+    }
+  }
+
+  likeEvent(bool isLiked, String postId, String uId) async {
+    final ref = _firestore.collection('posts').doc(postId);
+    if (isLiked) {
+      await ref.update({
+        'likes': FieldValue.arrayRemove([uId])
+      });
+    } else {
+      await ref.update({
+        'likes': FieldValue.arrayUnion([uId])
+      });
+    }
+  }
+
+  Future<List<AppUser>> getUsersByQuery(String query) async {
+    final results = await _firestore
+        .collection('users')
+        .where('name', isGreaterThanOrEqualTo: query)
+        .get();
+
+    final list = results.docs.map((e) => AppUser.toAppUser(e)).toList();
+    list.removeWhere((element) => element.uid == _auth.currentUser!.uid);
+    return list;
   }
 }
